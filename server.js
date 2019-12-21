@@ -5,7 +5,7 @@ const apiv1 = require("./api_v1/api.js");
 const apiv2 = require("./api_v2/api.js");
 
 server.use(express.json());
-server.use(express.urlencoded({extended: true}));
+server.use(express.urlencoded({ extended: true }));
 
 server.use("/api_v1", apiv1);
 server.use("/api_v2", apiv2);
