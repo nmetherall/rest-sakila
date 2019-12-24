@@ -1,16 +1,33 @@
 const express = require("express");
 const router = express.Router();
 
-const db = require("../../mysqlConnection");
+const mysqlDb = require("../../mysqlConnection");
+//database connection
+const db = mysqlDb.database;
+//a list of table names in the database
+const tables = mysqlDb.tables;
 
 //Helper Method to determine the direction of the relationship
 const targetBaseHelper = req => {
+  //figures out the table name no matter which order it was entered in the request
+  let tableName = tables.includes(`${req.baseTable}_${req.targetTable}`)
+    ? `${req.baseTable}_${req.targetTable}`
+    : tables.includes(`${req.targetTable}_${req.baseTable}`)
+    ? `${req.targetTable}_${req.baseTable}`
+    : null;
+
+  //throws an error if the bridge table isn't found
+  if (!tableName) throw new Error("Not a valid bridge table");
+  tableName = db.escapeId(tableName);
+
+  //escapes entered path values
   return {
     baseTable: db.escapeId(req.baseTable),
     baseIdField: db.escapeId(`${req.baseTable}_id`),
     baseId: db.escape(req.baseId),
-    targetTabel: db.escapeId(req.targetTable),
-    targetIdField: db.escapeId(`${req.targetTable}_id`)
+    targetTable: db.escapeId(req.targetTable),
+    targetIdField: db.escapeId(`${req.targetTable}_id`),
+    tableName: tableName
   };
 };
 
@@ -19,7 +36,7 @@ router.get("/", (req, res) => {
   const tb = targetBaseHelper(req);
 
   //SQL statement
-  const sql = `SELECT ${tb.targetTable}.* FROM film_actor INNER JOIN ${tb.targetTable} ON ${tb.targetTable}.${tb.targetIdField}= film_actor.${tb.targetId} WHERE film_actor.${tb.baseTable}_id=${tb.baseId}`;
+  const sql = `SELECT ${tb.targetTable}.* FROM ${tb.tableName} INNER JOIN ${tb.targetTable} ON ${tb.targetTable}.${tb.targetIdField}= ${tb.tableName}.${tb.targetIdField} WHERE ${tb.tableName}.${tb.baseIdField}=${tb.baseId}`;
 
   //database query
   db.query(sql, (err, results) => {
@@ -29,12 +46,29 @@ router.get("/", (req, res) => {
 });
 
 //POST: INSERT new row
-router.post("/", (req, res) => {});
+router.post("/", (req, res) => {
+  const tb = targetBaseHelper(req);
+
+  //escaped columns and rows from body
+  const columns = Object.keys(req.body).map(el => db.escapeId(el));
+  const rows = Object.values(req.body).map(el => db.escape(el));
+
+  //SQL statement
+  const sql = `INSERT INTO ${table} (${columns.join(", ")}) VALUES(${rows.join(
+    ", "
+  )})`;
+
+  //database query
+  db.query(sql, (err, results) => {
+    if (err) throw err;
+    res.send(JSON.stringify({ status: 200, error: null, response: results }));
+  });
+});
 
 //PUT{ID}: UPDATE existing row
-router.put("/:table/:id", (req, res) => {});
+router.put("/:tagetId", (req, res) => {});
 
 //DELETE{ID}: DELETE by id
-router.delete("/:table/:id", (req, res) => {});
+router.delete("/:targetId", (req, res) => {});
 
 module.exports = router;

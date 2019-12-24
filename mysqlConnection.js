@@ -1,15 +1,19 @@
 const mysql = require("mysql");
 
-var db = mysql.createConnection({
+const database = mysql.createConnection({
   host: "localhost",
   user: "root",
   password: "test",
   database: "sakila"
 });
 
-db.connect(function(err) {
+database.connect(function(err) {
   if (err) throw err;
-  console.log(`Connected to ${db.config.database}`);
+  console.log(`Connected to ${database.config.database}`);
 });
 
-module.exports = db;
+let tables = [];
+database.query(`SHOW tables`, (req, res) => {
+  this.tables = res.forEach(el => tables.push(el.Tables_in_sakila));
+});
+module.exports = { database, tables };

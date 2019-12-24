@@ -1,7 +1,8 @@
 const express = require("express");
 const router = express.Router();
 
-const db = require("../mysqlConnection");
+const mysqlDb = require("../../mysqlConnection");
+const db = mysqlDb.database;
 
 //Default
 router.get("/", (req, res) => {
@@ -12,8 +13,6 @@ router.get("/", (req, res) => {
 router.get("/:table", (req, res) => {
   //escaped table name
   const table = db.escapeId(req.params.table);
-
-  const queries = req.query;
 
   //escaped query columns and rows from query
   const columns = Object.keys(req.query).map(el => db.escapeId(el));
@@ -29,7 +28,7 @@ router.get("/:table", (req, res) => {
   //SQL statement
   const sql = `SELECT * from ${table}${sqlFilter}`;
 
-  //database query
+  //database query and response
   db.query(sql, (err, results) => {
     if (err) console.log(err);
     res.send(JSON.stringify({ status: 200, error: null, response: results }));
@@ -46,7 +45,7 @@ router.get("/:table/:id", (req, res) => {
   //SQL statement
   const sql = `SELECT * FROM ${table} WHERE ${idField} = ${id}`;
 
-  //database query
+  //database query and response
   db.query(sql, (err, results) => {
     if (err) throw err;
     res.send(JSON.stringify({ status: 200, error: null, response: results }));
@@ -67,7 +66,7 @@ router.post("/:table", (req, res) => {
     ", "
   )})`;
 
-  //database query
+  //database query and response
   db.query(sql, (err, results) => {
     if (err) throw err;
     res.send(JSON.stringify({ status: 200, error: null, response: results }));
@@ -96,7 +95,7 @@ router.put("/:table/:id", (req, res) => {
   )} WHERE ${idField} = ${id}`;
   console.log(sql);
 
-  //database query
+  //database query and response
   db.query(sql, (err, results) => {
     if (err) throw err;
     res.send(JSON.stringify({ status: 200, error: null, response: results }));
@@ -113,7 +112,7 @@ router.delete("/:table/:id", (req, res) => {
   //SQL statement
   const sql = `DELETE FROM ${table} WHERE ${idField} = ${id}`;
 
-  //database query
+  //database query and response
   db.query(sql, (err, results) => {
     if (err) throw err;
     res.send(JSON.stringify({ status: 200, error: null, response: results }));
