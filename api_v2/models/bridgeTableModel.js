@@ -54,9 +54,9 @@ router.post("/", (req, res) => {
   const rows = Object.values(req.body).map(el => db.escape(el));
 
   //SQL statement
-  const sql = `INSERT INTO ${table} (${columns.join(", ")}) VALUES(${rows.join(
+  const sql = `INSERT INTO ${tb.baseTable} (${columns.join(
     ", "
-  )})`;
+  )}) VALUES(${rows.join(", ")})`;
 
   //database query
   db.query(sql, (err, results) => {
@@ -66,9 +66,13 @@ router.post("/", (req, res) => {
 });
 
 //PUT{ID}: UPDATE existing row
-router.put("/:tagetId", (req, res) => {});
+router.put("/:tagetId", (req, res) => {
+  //TODO: fill in method
+});
 
 //DELETE{ID}: DELETE by id
-router.delete("/:targetId", (req, res) => {});
+router.delete("/:targetId", (req, res) => {
+  //TODO: fill in method
+});
 
 module.exports = router;
