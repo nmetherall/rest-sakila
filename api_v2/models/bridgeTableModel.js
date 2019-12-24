@@ -5,19 +5,13 @@ const db = require("../../mysqlConnection");
 
 //Helper Method to determine the direction of the relationship
 const targetBaseHelper = req => {
-  if (req.filmId)
-    return {
-      baseId: db.escape(req.filmId),
-      baseTable: "film",
-      targetTable: "actor"
-    };
-  //if a film Id was passed
-  else if (req.actorId)
-    return {
-      baseId: db.escape(req.actorId),
-      baseTable: "actor",
-      targetTable: "film"
-    };
+  return {
+    baseTable: db.escapeId(req.baseTable),
+    baseIdField: db.escapeId(`${req.baseTable}_id`),
+    baseId: db.escape(req.baseId),
+    targetTabel: db.escapeId(req.targetTable),
+    targetIdField: db.escapeId(`${req.targetTable}_id`)
+  };
 };
 
 //GET: SELECT ALL
@@ -25,7 +19,7 @@ router.get("/", (req, res) => {
   const tb = targetBaseHelper(req);
 
   //SQL statement
-  const sql = `SELECT ${tb.targetTable}.* FROM film_actor INNER JOIN ${tb.targetTable} ON ${tb.targetTable}.${tb.targetTable}_id = film_actor.${tb.targetTable}_id WHERE film_actor.${tb.baseTable}_id=${tb.baseId}`;
+  const sql = `SELECT ${tb.targetTable}.* FROM film_actor INNER JOIN ${tb.targetTable} ON ${tb.targetTable}.${tb.targetIdField}= film_actor.${tb.targetId} WHERE film_actor.${tb.baseTable}_id=${tb.baseId}`;
 
   //database query
   db.query(sql, (err, results) => {
@@ -33,5 +27,14 @@ router.get("/", (req, res) => {
     res.send(JSON.stringify({ status: 200, error: null, response: results }));
   });
 });
+
+//POST: INSERT new row
+router.post("/", (req, res) => {});
+
+//PUT{ID}: UPDATE existing row
+router.put("/:table/:id", (req, res) => {});
+
+//DELETE{ID}: DELETE by id
+router.delete("/:table/:id", (req, res) => {});
 
 module.exports = router;
