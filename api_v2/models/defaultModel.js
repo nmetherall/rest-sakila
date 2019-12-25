@@ -24,9 +24,10 @@ router.get("/:table", (req, res) => {
 	});
 
 	//SQL filter
-	const sqlFilter = pairs.length ? ` WHERE ${pairs.join("AND ")}` : "";
+	const sqlFilter = pairs.length ? `WHERE ${pairs.join("AND ")}` : "";
 	//SQL statement
-	const sql = `SELECT * from ${table}${sqlFilter}`;
+	const sql = `SELECT * FROM ${table}
+	${sqlFilter}`;
 
 	//database query and response
 	db.query(sql, (err, results) => {
@@ -43,7 +44,8 @@ router.get("/:table/:id", (req, res) => {
 	const id = db.escape(req.params.id);
 
 	//SQL statement
-	const sql = `SELECT * FROM ${table} WHERE ${idField} = ${id}`;
+	const sql = `SELECT * FROM ${table} 
+	WHERE ${idField} = ${id}`;
 
 	//database query and response
 	db.query(sql, (err, results) => {
@@ -63,9 +65,9 @@ router.post("/:table", (req, res) => {
 	const rows = Object.values(req.body).map(el => db.escape(el));
 
 	//SQL statement
-	const sql = `INSERT INTO ${table} (${columns.join(", ")}) VALUES(${rows.join(
-		", "
-	)})`;
+	const sql = `INSERT INTO ${table} 
+	(${columns.join(", ")}) 
+	VALUES(${rows.join(", ")})`;
 
 	//database query and response
 	db.query(sql, (err, results) => {
@@ -91,9 +93,9 @@ router.put("/:table/:id", (req, res) => {
 	});
 
 	//SQL statement
-	const sql = `UPDATE ${table} SET ${pairs.join(
-		", "
-	)} WHERE ${idField} = ${id}`;
+	const sql = `UPDATE ${table} 
+	SET ${pairs.join(", ")} 
+	WHERE ${idField} = ${id}`;
 
 	//database query and response
 	db.query(sql, (err, results) => {
@@ -110,7 +112,8 @@ router.delete("/:table/:id", (req, res) => {
 	const id = db.escape(req.params.id);
 
 	//SQL statement
-	const sql = `DELETE FROM ${table} WHERE ${idField} = ${id}`;
+	const sql = `DELETE FROM ${table} 
+	WHERE ${idField} = ${id}`;
 
 	//database query and response
 	db.query(sql, (err, results) => {
