@@ -33,6 +33,7 @@ const targetBaseHelper = req => {
 
 //GET: SELECT ALL
 router.get("/", (req, res) => {
+	//calls a helper to help parse the request
 	const tb = targetBaseHelper(req);
 
 	//SQL statement
@@ -51,6 +52,7 @@ router.get("/", (req, res) => {
 
 //POST: INSERT new row
 router.post("/", (req, res) => {
+	//calls a helper to help parse the request
 	const tb = targetBaseHelper(req);
 
 	//escaped columns and rows from body
@@ -71,7 +73,10 @@ router.post("/", (req, res) => {
 
 //PUT{ID}: UPDATE existing row
 router.put("/:targetId", (req, res) => {
+	//calls a helper to help parse the request
 	const tb = targetBaseHelper(req);
+
+	//escaped target table id number
 	const targetId = db.escape(req.params.targetId);
 
 	//escaped columns and rows from body
@@ -89,8 +94,6 @@ router.put("/:targetId", (req, res) => {
 	WHERE ${tb.baseIdField} = ${tb.baseId} 
 	AND ${tb.targetIdField} = ${targetId}`;
 
-	console.log(sql);
-
 	//database query and response
 	db.query(sql, (err, results) => {
 		if (err) throw err;
@@ -100,9 +103,10 @@ router.put("/:targetId", (req, res) => {
 
 //DELETE{ID}: DELETE by id
 router.delete("/:targetId", (req, res) => {
+	//calls a helper to help parse the request
 	const tb = targetBaseHelper(req);
 
-	//escaped table name, id field, and id number
+	//escaped target table id number
 	const targetId = db.escape(req.params.targetId);
 
 	//SQL statement
