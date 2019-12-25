@@ -36,7 +36,11 @@ router.get("/", (req, res) => {
 	const tb = targetBaseHelper(req);
 
 	//SQL statement
-	const sql = `SELECT ${tb.targetTable}.* FROM ${tb.tableName} INNER JOIN ${tb.targetTable} ON ${tb.targetTable}.${tb.targetIdField}= ${tb.tableName}.${tb.targetIdField} WHERE ${tb.tableName}.${tb.baseIdField}=${tb.baseId}`;
+	const sql = `SELECT ${tb.targetTable}.* 
+	FROM ${tb.tableName} 
+	INNER JOIN ${tb.targetTable} 
+	ON ${tb.targetTable}.${tb.targetIdField}= ${tb.tableName}.${tb.targetIdField} 
+	WHERE ${tb.tableName}.${tb.baseIdField}=${tb.baseId}`;
 
 	//database query
 	db.query(sql, (err, results) => {
@@ -54,9 +58,9 @@ router.post("/", (req, res) => {
 	const rows = Object.values(req.body).map(el => db.escape(el));
 
 	//SQL statement
-	const sql = `INSERT INTO ${tb.baseTable} (${columns.join(
-		", "
-	)}) VALUES(${rows.join(", ")})`;
+	const sql = `INSERT INTO ${tb.tableName} 
+	(${columns.join(", ")}) 
+	VALUES(${rows.join(", ")})`;
 
 	//database query
 	db.query(sql, (err, results) => {
@@ -66,13 +70,51 @@ router.post("/", (req, res) => {
 });
 
 //PUT{ID}: UPDATE existing row
-router.put("/:tagetId", (req, res) => {
-	//TODO: fill in method
+router.put("/:targetId", (req, res) => {
+	const tb = targetBaseHelper(req);
+	const targetId = db.escape(req.params.targetId);
+
+	//escaped columns and rows from body
+	const columns = Object.keys(req.body).map(el => db.escapeId(el));
+	const rows = Object.values(req.body).map(el => db.escape(el));
+
+	//keys and values are formated and mapped to an array
+	const pairs = columns.map((el, index) => {
+		return `${el}=${rows[index]}`;
+	});
+
+	//SQL statement
+	const sql = `UPDATE ${tb.tableName} 
+	SET ${pairs.join(", ")} 
+	WHERE ${tb.baseIdField} = ${tb.baseId} 
+	AND ${tb.targetIdField} = ${targetId}`;
+
+	console.log(sql);
+
+	//database query and response
+	db.query(sql, (err, results) => {
+		if (err) throw err;
+		res.status(200).json(results);
+	});
 });
 
 //DELETE{ID}: DELETE by id
 router.delete("/:targetId", (req, res) => {
-	//TODO: fill in method
+	const tb = targetBaseHelper(req);
+
+	//escaped table name, id field, and id number
+	const targetId = db.escape(req.params.targetId);
+
+	//SQL statement
+	const sql = `DELETE FROM ${tb.tableName} 
+	WHERE ${tb.baseIdField} = ${tb.baseId} 
+	AND ${tb.targetIdField} = ${targetId}`;
+
+	//database query and response
+	db.query(sql, (err, results) => {
+		if (err) throw err;
+		res.status(200).json(results);
+	});
 });
 
 module.exports = router;
