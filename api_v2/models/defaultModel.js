@@ -94,7 +94,6 @@ router.put("/:table/:id", (req, res) => {
 	const sql = `UPDATE ${table} SET ${pairs.join(
 		", "
 	)} WHERE ${idField} = ${id}`;
-	console.log(sql);
 
 	//database query and response
 	db.query(sql, (err, results) => {
