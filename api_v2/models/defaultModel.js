@@ -115,7 +115,7 @@ router.delete("/:table/:id", (req, res) => {
 	//database query and response
 	db.query(sql, (err, results) => {
 		if (err) throw err;
-		res.status(200).json(response);
+		res.status(200).json(results);
 	});
 });
 
