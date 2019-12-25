@@ -11,11 +11,11 @@ server.use("/api_v1", apiv1);
 server.use("/api_v2", apiv2);
 
 server.get("/", (req, res) => {
-  res.status(200).json({ hello: `World!` });
+	res.status(200).json({ hello: `World!` });
 });
 
 server.get("/api_v1", (req, res) => {
-  res.status(200).json({ hello: `This is my API` });
+	res.status(200).json({ hello: `This is my API` });
 });
 
 module.exports = server;
