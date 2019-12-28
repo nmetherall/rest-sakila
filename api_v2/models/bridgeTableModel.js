@@ -45,7 +45,7 @@ router.get("/", (req, res) => {
 
 	//database query
 	db.query(sql, (err, results) => {
-		if (err) console.log(err);
+		if (err) throw err;
 		res.status(200).json(results);
 	});
 });

@@ -31,7 +31,7 @@ router.get("/:table", (req, res) => {
 
 	//database query and response
 	db.query(sql, (err, results) => {
-		if (err) console.log(err);
+		if (err) throw err;
 		res.status(200).json(results);
 	});
 });
@@ -51,7 +51,6 @@ router.get("/:table/:id", (req, res) => {
 	db.query(sql, (err, results) => {
 		if (err) throw err;
 		res.status(200).json(results);
-		//res.send(JSON.stringify({ status: 200, error: null, response: results }));
 	});
 });
 
