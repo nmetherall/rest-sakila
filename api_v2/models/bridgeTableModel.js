@@ -45,7 +45,7 @@ router.get("/", (req, res) => {
 
   //database query
   db.query(sql, (err, results) => {
-    if (err) throw err;
+    if (err) res.status(400).json(err);
     res.status(200).json(results);
   });
 });
@@ -66,7 +66,7 @@ router.post("/", (req, res) => {
 
   //database query
   db.query(sql, (err, results) => {
-    if (err) throw err;
+    if (err) res.status(400).json(err);
     res.status(201).json(results);
   });
 });
@@ -96,7 +96,7 @@ router.put("/:targetId", (req, res) => {
 
   //database query and response
   db.query(sql, (err, results) => {
-    if (err) throw err;
+    if (err) res.status(400).json(err);
     res.status(200).json(results);
   });
 });
@@ -116,7 +116,7 @@ router.delete("/:targetId", (req, res) => {
 
   //database query and response
   db.query(sql, (err, results) => {
-    if (err) throw err;
+    if (err) res.status(400).json(err);
     res.status(200).json(results);
   });
 });
