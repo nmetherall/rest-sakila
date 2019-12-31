@@ -50,23 +50,42 @@ function createFields(fields) {
 }
 
 function createSortBy(params) {
+  console.log(params);
   return params
     .split(",")
     .map(el => {
-      let split = el.split(".");
-      return `${db.escapeId(split[0])} ${split[1].toUpperCase()}`;
+      let split = el.split(":");
+      return `${db.escapeId(split[0])} ${
+        split[1] ? split[1].toUpperCase() : ""
+      }`;
     })
     .join(",");
 }
 
+// function createWhere(key, values) {
+//   const keyOpSplit = key.split(".");
+//   const keyOp = `${db.escapeId(keyOpSplit[0])} ${inputToOperator(
+//     keyOpSplit[1]
+//   )}`;
+//   if (Array.isArray(values))
+//     return values.map(el => `${keyOp} ${db.escape(el)}`);
+//   return [`${keyOp} ${db.escape(values)}`];
+// }
+
 function createWhere(key, values) {
-  const keyOpSplit = key.split(".");
-  const keyOp = `${db.escapeId(keyOpSplit[0])} ${inputToOperator(
-    keyOpSplit[1]
-  )}`;
+  //if multiple values where passed
   if (Array.isArray(values))
-    return values.map(el => `${keyOp} ${db.escape(el)}`);
-  return [`${keyOp} ${db.escape(values)}`];
+    return values.map(el => {
+      return `${db.escapeId(key)} ${operatorValueParse(el)}`;
+    });
+  //if a single value is passed
+  return `${db.escapeId(key)} ${operatorValueParse(values)}`;
+}
+
+function operatorValueParse(input) {
+  let opValSplit = input.split(":");
+  if (opValSplit.length == 1) return `= ${db.escape(input)}`;
+  return `${inputToOperator(opValSplit[0])} ${db.escape(opValSplit[1])}`;
 }
 
 function inputToOperator(input) {
@@ -90,7 +109,7 @@ function inputToOperator(input) {
     case "like":
       operator = "LIKE";
       break;
-    case "notlike":
+    case "nl":
       operator = "NOT LIKE";
       break;
     default:
