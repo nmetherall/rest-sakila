@@ -14,6 +14,7 @@ router.get("/", (req, res) => {
   //calls a helper to help parse the request
   const tb = targetBaseHelper(req);
 
+  //json object of a parsed url query
   const parsedQuery = queryParse(req.query);
 
   //SQL statement
@@ -34,6 +35,34 @@ router.get("/", (req, res) => {
   console.log("sql", sql);
 
   //database query
+  db.query(sql, (err, results) => {
+    if (err) res.status(400).json(err);
+    res.status(200).json(results);
+  });
+});
+
+//GET{ID}: SELECT by id
+router.get("/:targetId", (req, res) => {
+  //calls a helper to help parse the request
+  const tb = targetBaseHelper(req);
+
+  //json object of a parsed url query
+  const parsedQuery = queryParse(req.query);
+
+  //escaped target table id number
+  const targetId = db.escape(req.params.targetId);
+
+  //SQL statement
+  const sql = `SELECT ${parsedQuery.fields}
+  FROM ${tb.tableName}
+	INNER JOIN ${tb.targetTable}
+  ON ${tb.targetTable}.${tb.targetIdField}= ${tb.tableName}.${tb.targetIdField}
+  INNER JOIN ${tb.baseTable}
+	ON ${tb.baseTable}.${tb.baseIdField}= ${tb.tableName}.${tb.baseIdField}
+  WHERE ${tb.tableName}.${tb.baseIdField}=${tb.baseId} 
+  AND ${tb.tableName}.${tb.targetIdField}=${targetId}`;
+
+  //database query and response
   db.query(sql, (err, results) => {
     if (err) res.status(400).json(err);
     res.status(200).json(results);

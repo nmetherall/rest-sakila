@@ -11,6 +11,7 @@ router.get("/:table", (req, res) => {
   //escaped table name
   const table = db.escapeId(req.params.table);
 
+  //json object of a parsed url query
   const parsedQuery = queryParse(req.query);
 
   //SQL statement
@@ -35,6 +36,7 @@ router.get("/:table/:id", (req, res) => {
   const idField = db.escapeId(`${req.params.table}_id`);
   const id = db.escape(req.params.id);
 
+  //json object of a parsed url query
   const parsedQuery = queryParse(req.query);
 
   //SQL statement
