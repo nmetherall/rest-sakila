@@ -1,19 +1,24 @@
 const express = require("express");
 const router = express.Router();
 
-const mysqlDb = require("../../mysqlConnection");
-const db = mysqlDb.database;
+const db = require("../../mysqlConnection");
+
+/*
+I CAN OVERRIDE THE VARIABLE
+router.get("/:table/42", (req, res) => {
+    res.send(JSON.stringify({"status": 200, "error": null, "response": "We Did It!"}))
+});*/
 
 //GET: SELECT ALL
 router.get("/:table", (req, res) => {
   //escaped table name
   const table = db.escapeId(req.params.table);
 
+  const queries = req.query;
+
   //escaped query columns and rows from query
   const columns = Object.keys(req.query).map(el => db.escapeId(el));
   const rows = Object.values(req.query).map(el => db.escape(el));
-
-  console.log(req.query);
 
   //keys and values are formated and mapped to an array
   const pairs = columns.map((el, index) => {
@@ -21,15 +26,14 @@ router.get("/:table", (req, res) => {
   });
 
   //SQL filter
-  const sqlFilter = pairs.length ? `WHERE ${pairs.join(" AND ")}` : "";
+  const sqlFilter = pairs.length ? ` WHERE ${pairs.join("AND ")}` : "";
   //SQL statement
-  const sql = `SELECT * FROM ${table}
-	${sqlFilter}`;
+  const sql = `SELECT * from ${table}${sqlFilter}`;
 
-  //database query and response
+  //database query
   db.query(sql, (err, results) => {
-    if (err) res.status(400).json(err);
-    res.status(200).json(results);
+    if (err) console.log(err);
+    res.send(JSON.stringify({ status: 200, error: null, response: results }));
   });
 });
 
@@ -41,13 +45,12 @@ router.get("/:table/:id", (req, res) => {
   const id = db.escape(req.params.id);
 
   //SQL statement
-  const sql = `SELECT * FROM ${table} 
-	WHERE ${idField} = ${id}`;
+  const sql = `SELECT * FROM ${table} WHERE ${idField} = ${id}`;
 
-  //database query and response
+  //database query
   db.query(sql, (err, results) => {
-    if (err) res.status(400).json(err);
-    res.status(200).json(results);
+    if (err) throw err;
+    res.send(JSON.stringify({ status: 200, error: null, response: results }));
   });
 });
 
@@ -61,14 +64,14 @@ router.post("/:table", (req, res) => {
   const rows = Object.values(req.body).map(el => db.escape(el));
 
   //SQL statement
-  const sql = `INSERT INTO ${table} 
-	(${columns.join(", ")}) 
-	VALUES(${rows.join(", ")})`;
+  const sql = `INSERT INTO ${table} (${columns.join(", ")}) VALUES(${rows.join(
+    ", "
+  )})`;
 
-  //database query and response
+  //database query
   db.query(sql, (err, results) => {
-    if (err) res.status(400).json(err);
-    res.status(201).send(results);
+    if (err) throw err;
+    res.send(JSON.stringify({ status: 200, error: null, response: results }));
   });
 });
 
@@ -89,14 +92,15 @@ router.put("/:table/:id", (req, res) => {
   });
 
   //SQL statement
-  const sql = `UPDATE ${table} 
-	SET ${pairs.join(", ")} 
-	WHERE ${idField} = ${id}`;
+  const sql = `UPDATE ${table} SET ${pairs.join(
+    ", "
+  )} WHERE ${idField} = ${id}`;
+  console.log(sql);
 
-  //database query and response
+  //database query
   db.query(sql, (err, results) => {
-    if (err) res.status(400).json(err);
-    res.status(200).json(results);
+    if (err) throw err;
+    res.send(JSON.stringify({ status: 200, error: null, response: results }));
   });
 });
 
@@ -108,13 +112,12 @@ router.delete("/:table/:id", (req, res) => {
   const id = db.escape(req.params.id);
 
   //SQL statement
-  const sql = `DELETE FROM ${table} 
-	WHERE ${idField} = ${id}`;
+  const sql = `DELETE FROM ${table} WHERE ${idField} = ${id}`;
 
-  //database query and response
+  //database query
   db.query(sql, (err, results) => {
-    if (err) res.status(400).json(err);
-    res.status(200).json(results);
+    if (err) throw err;
+    res.send(JSON.stringify({ status: 200, error: null, response: results }));
   });
 });
 

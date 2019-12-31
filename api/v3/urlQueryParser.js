@@ -1,6 +1,6 @@
 //Function to parse a query from the url and return values to be used in an SQL query
 
-const mysqlDb = require("../mysqlConnection");
+const mysqlDb = require("../../mysqlConnection");
 const db = mysqlDb.database;
 
 //takes a url query and parses it for sql commands
@@ -99,7 +99,7 @@ function operatorValueParse(input) {
   //checks if an operator was passed
   //if not returns an escaped version of the input
   //if it was returns a string in the format '{operator} {escaped value}' ex. '<> `dog`'
-  opValSplit.length == 1
+  return opValSplit.length === 1
     ? `= ${db.escape(input)}`
     : `${inputToOperator(opValSplit[0])} ${db.escape(opValSplit[1])}`;
 }

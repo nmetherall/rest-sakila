@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 
-const mysqlConnection = require("../mysqlConnection");
+const mysqlConnection = require("../../mysqlConnection");
 let tables = mysqlConnection.tables;
 
 //Default message

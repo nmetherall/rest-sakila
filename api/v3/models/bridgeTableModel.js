@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 
-const mysqlDb = require("../../mysqlConnection");
+const mysqlDb = require("../../../mysqlConnection");
 //database connection
 const db = mysqlDb.database;
 //a list of table names in the database

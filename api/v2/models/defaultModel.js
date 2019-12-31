@@ -1,27 +1,31 @@
 const express = require("express");
 const router = express.Router();
 
-const mysqlDb = require("../../mysqlConnection");
+const mysqlDb = require("../../../mysqlConnection");
 const db = mysqlDb.database;
-
-const queryParse = require("../urlQueryParser");
 
 //GET: SELECT ALL
 router.get("/:table", (req, res) => {
   //escaped table name
   const table = db.escapeId(req.params.table);
 
-  //json object of a parsed url query
-  const parsedQuery = queryParse(req.query);
+  //escaped query columns and rows from query
+  const columns = Object.keys(req.query).map(el => db.escapeId(el));
+  const rows = Object.values(req.query).map(el => db.escape(el));
 
+  console.log(req.query);
+
+  //keys and values are formated and mapped to an array
+  const pairs = columns.map((el, index) => {
+    return `${el}=${rows[index]}`;
+  });
+
+  //SQL filter
+  const sqlFilter = pairs.length ? `WHERE ${pairs.join(" AND ")}` : "";
   //SQL statement
-  const sql = `SELECT ${parsedQuery.fields} FROM ${table}
-  ${parsedQuery.where ? `WHERE ${parsedQuery.where}` : ""}
-  ${parsedQuery.orderBy ? `ORDER BY ${parsedQuery.orderBy}` : ""}
-  ${parsedQuery.limit}
-  ${parsedQuery.offset}`;
+  const sql = `SELECT * FROM ${table}
+	${sqlFilter}`;
 
-  console.log("sql:", sql);
   //database query and response
   db.query(sql, (err, results) => {
     if (err) res.status(400).json(err);
@@ -36,11 +40,8 @@ router.get("/:table/:id", (req, res) => {
   const idField = db.escapeId(`${req.params.table}_id`);
   const id = db.escape(req.params.id);
 
-  //json object of a parsed url query
-  const parsedQuery = queryParse(req.query);
-
   //SQL statement
-  const sql = `SELECT ${parsedQuery.fields} FROM ${table} 
+  const sql = `SELECT * FROM ${table} 
 	WHERE ${idField} = ${id}`;
 
   //database query and response
