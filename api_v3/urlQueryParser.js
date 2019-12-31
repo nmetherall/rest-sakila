@@ -1,4 +1,4 @@
-//Function to parse a query from the url and return it as an SQL query
+//Function to parse a query from the url and return values to be used in an SQL query
 
 const mysqlDb = require("../mysqlConnection");
 const db = mysqlDb.database;
@@ -13,6 +13,8 @@ function urlQueryParser(query) {
   const keys = Object.keys(query);
   const values = Object.values(query);
 
+  //switch statement checking for reserved keys
+  //default assume a column name and value were passed for where
   keys.forEach((key, index) => {
     switch (key) {
       case "_fields":
@@ -33,6 +35,7 @@ function urlQueryParser(query) {
     }
   });
 
+  //object containing usedful fields for sql queries based on the url query
   return {
     fields: fields ? fields : "",
     limit: limit ? limit : "",
@@ -42,7 +45,10 @@ function urlQueryParser(query) {
   };
 }
 
-//takes a string of params delimited by commas and returns the string where each field name has been escaped
+/*
+takes a string of params delimited by commas 
+and returns the string where each field name has been escaped
+ */
 function createFields(fields) {
   return fields
     .split(",")
@@ -50,7 +56,11 @@ function createFields(fields) {
     .join(",");
 }
 
-//creates the ORDER BY arguments for an sql query.  takes a string of comma delimited params which may have a qualifier attached ex. 'table_name:asc'
+/*
+creates the ORDER BY arguments for an sql query. 
+Takes a string of comma delimited params which may have a qualifier attached 
+ex. 'table_name:asc'
+*/
 function createSortBy(params) {
   console.log(params);
   return params
@@ -64,8 +74,11 @@ function createSortBy(params) {
     .join(",");
 }
 
-//builds an array strings which can be joined to create a WHERE query
-//returns a string in the format '{escaped column} {operator} {escaped value}' ex. '`table` >= `10`'
+/*
+builds an array strings which can be joined to create a WHERE query
+returns a string in the format '{escaped column} {operator} {escaped value}' 
+ex. '`table` >= `10`'
+*/
 function createWhere(key, values) {
   //if multiple values where passed
   if (Array.isArray(values))
@@ -76,7 +89,10 @@ function createWhere(key, values) {
   return `${db.escapeId(key)} ${operatorValueParse(values)}`;
 }
 
-//takes a value which may contain an operator in addition to the value and returns both as a string in the proper format
+/*
+takes a value which may contain an operator in addition to the value 
+and returns both as a string in the proper format
+*/
 function operatorValueParse(input) {
   //splits the operator and the value on the ':' character
   let opValSplit = input.split(":");
