@@ -38,7 +38,7 @@ function urlQueryParser(query) {
     limit: limit ? limit : "",
     offset: offset ? offset : "",
     orderBy: orderBy ? orderBy : "",
-    where: where.length ? `WHERE ${where.join(" AND ")}` : ""
+    where: where.length ? `${where.join(" AND ")}` : ""
   };
 }
 
@@ -50,16 +50,13 @@ function createFields(fields) {
 }
 
 function createSortBy(params) {
-  return (
-    "ORDER BY " +
-    params
-      .split(",")
-      .map(el => {
-        let split = el.split(".");
-        return `${db.escapeId(split[0])} ${split[1].toUpperCase()}`;
-      })
-      .join(",")
-  );
+  return params
+    .split(",")
+    .map(el => {
+      let split = el.split(".");
+      return `${db.escapeId(split[0])} ${split[1].toUpperCase()}`;
+    })
+    .join(",");
 }
 
 function createWhere(key, values) {
@@ -90,10 +87,10 @@ function inputToOperator(input) {
     case "ne":
       operator = "<>";
       break;
-    case "l":
+    case "like":
       operator = "LIKE";
       break;
-    case "nl":
+    case "notlike":
       operator = "NOT LIKE";
       break;
     default:

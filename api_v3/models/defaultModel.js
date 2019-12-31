@@ -11,13 +11,12 @@ router.get("/:table", (req, res) => {
   //escaped table name
   const table = db.escapeId(req.params.table);
 
-  console.log("parsed:", queryParse(req.query));
   const parsedQuery = queryParse(req.query);
 
   //SQL statement
   const sql = `SELECT ${parsedQuery.fields} FROM ${table}
-  ${parsedQuery.where}
-  ${parsedQuery.orderBy}
+  ${parsedQuery.where ? `WHERE ${parsedQuery.where}` : ""}
+  ${parsedQuery.orderBy ? `ORDER BY ${parsedQuery.orderBy}` : ""}
   ${parsedQuery.limit}
   ${parsedQuery.offset}`;
 
