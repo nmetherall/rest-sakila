@@ -35,8 +35,10 @@ router.get("/:table/:id", (req, res) => {
   const idField = db.escapeId(`${req.params.table}_id`);
   const id = db.escape(req.params.id);
 
+  const parsedQuery = queryParse(req.query);
+
   //SQL statement
-  const sql = `SELECT * FROM ${table} 
+  const sql = `SELECT ${parsedQuery.fields} FROM ${table} 
 	WHERE ${idField} = ${id}`;
 
   //database query and response
