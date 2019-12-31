@@ -1,23 +1,9 @@
-GET
-    Implement advanced search features
-        >  fieldname.gt = val
-        <   .lt
-        >=  .gte
-        <=  .lte
-        <>  .ne
+default GET /:ID
+    Implement filter options
 
-        LIKE .like
-
-    Implement Sort Options
-        asc  _sortBy = fieldname.asc
-        desc _sortBy = fieldname.desc
-        multiple fields
-
-    Implement Pagination
-        _limit = int
-        _offset = int
-
-    Allow for selection of specific fields
-        _fields = 
+bridge GET
+    Implement filter options
+    maybe allow user to select what fields to view from all possible joined fields
+        this might be too much    
 
 Request Rate Limiting
