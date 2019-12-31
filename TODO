@@ -1,0 +1,18 @@
+GET
+    Implement advanced search features
+        >
+        <
+        >=
+        <=
+        <>
+
+        LIKE
+
+    Implement Sort Options
+        asc
+        desc
+        multiple fields
+
+    Implement Pagination
+        LIMIT 
+        OFFSET
