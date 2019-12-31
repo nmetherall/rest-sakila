@@ -4,28 +4,24 @@ const router = express.Router();
 const mysqlDb = require("../../mysqlConnection");
 const db = mysqlDb.database;
 
+const queryParse = require("../urlQueryParser");
+
 //GET: SELECT ALL
 router.get("/:table", (req, res) => {
   //escaped table name
   const table = db.escapeId(req.params.table);
 
-  //escaped query columns and rows from query
-  const columns = Object.keys(req.query).map(el => db.escapeId(el));
-  const rows = Object.values(req.query).map(el => db.escape(el));
+  console.log("parsed:", queryParse(req.query));
+  const parsedQuery = queryParse(req.query);
 
-  console.log(req.query);
-
-  //keys and values are formated and mapped to an array
-  const pairs = columns.map((el, index) => {
-    return `${el}=${rows[index]}`;
-  });
-
-  //SQL filter
-  const sqlFilter = pairs.length ? `WHERE ${pairs.join(" AND ")}` : "";
   //SQL statement
-  const sql = `SELECT * FROM ${table}
-	${sqlFilter}`;
+  const sql = `SELECT ${parsedQuery.fields} FROM ${table}
+  ${parsedQuery.where}
+  ${parsedQuery.orderBy}
+  ${parsedQuery.limit}
+  ${parsedQuery.offset}`;
 
+  console.log("sql:", sql);
   //database query and response
   db.query(sql, (err, results) => {
     if (err) res.status(400).json(err);

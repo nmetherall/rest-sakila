@@ -1,18 +1,23 @@
 GET
     Implement advanced search features
-        >
-        <
-        >=
-        <=
-        <>
+        >  fieldname.gt = val
+        <   .lt
+        >=  .gte
+        <=  .lte
+        <>  .ne
 
-        LIKE
+        LIKE .like
 
     Implement Sort Options
-        asc
-        desc
+        asc  _sortBy = fieldname.asc
+        desc _sortBy = fieldname.desc
         multiple fields
 
     Implement Pagination
-        LIMIT 
-        OFFSET
+        _limit = int
+        _offset = int
+
+    Allow for selection of specific fields
+        _fields = 
+
+Request Rate Limiting

@@ -21,6 +21,9 @@ server.use("/api_v1", apiv1);
 //api_v2
 const apiv2 = require("./api_v2/api.js");
 server.use("/api_v2", apiv2);
+//api_v3
+const apiv3 = require("./api_v3/api.js");
+server.use("/api_v3", apiv3);
 
 //Default Path
 server.get("/", (req, res) => {
