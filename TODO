@@ -8,6 +8,6 @@ bridge GET
 
 '.' might not work for url query functionality because
     I many want to keep it open for searches in the bridge table ex. actor.actor_id
-    maybe ':' instead
+    maybe ':' or '~' instead
 
 Request Rate Limiting
