@@ -6,4 +6,8 @@ bridge GET
     maybe allow user to select what fields to view from all possible joined fields
         this might be too much    
 
+'.' might not work for url query functionality because
+    I many want to keep it open for searches in the bridge table ex. actor.actor_id
+    maybe ':' instead
+
 Request Rate Limiting
