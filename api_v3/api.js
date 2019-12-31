@@ -1,9 +1,17 @@
 const express = require("express");
 const router = express.Router();
 
+const mysqlConnection = require("../mysqlConnection");
+let tables = mysqlConnection.tables;
+
 //Default message
 router.get("/", (req, res) => {
-  res.status(200).send("Hello! Welcome to api_v2");
+  res.status(200).send("Hello! Welcome to api_v3");
+});
+
+//Default message
+router.get("/_tables", (req, res) => {
+  res.status(200).send(tables);
 });
 
 //I can reserve paths that will override the default model
