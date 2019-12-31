@@ -1,14 +1,14 @@
 //Function to parse a query from the url and return it as an SQL query
-//TODO: COMMENT EVERYTHING
 
 const mysqlDb = require("../mysqlConnection");
 const db = mysqlDb.database;
 
+//takes a url query and parses it for sql commands
 function urlQueryParser(query) {
   let fields = "*";
   let where = [];
-  let limit, offset;
   let orderBy;
+  let limit, offset;
 
   const keys = Object.keys(query);
   const values = Object.values(query);
@@ -18,14 +18,14 @@ function urlQueryParser(query) {
       case "_fields":
         fields = createFields(values[index]);
         break;
+      case "_sortBy":
+        orderBy = createSortBy(values[index]);
+        break;
       case "_limit":
         limit = `LIMIT ${parseInt(values[index])}`;
         break;
       case "_offset":
         offset = `OFFSET ${parseInt(values[index])}`;
-        break;
-      case "_sortBy":
-        orderBy = createSortBy(values[index]);
         break;
       default:
         where = where.concat(createWhere(key, values[index]));
@@ -42,6 +42,7 @@ function urlQueryParser(query) {
   };
 }
 
+//takes a string of params delimited by commas and returns the string where each field name has been escaped
 function createFields(fields) {
   return fields
     .split(",")
@@ -49,6 +50,7 @@ function createFields(fields) {
     .join(",");
 }
 
+//creates the ORDER BY arguments for an sql query.  takes a string of comma delimited params which may have a qualifier attached ex. 'table_name:asc'
 function createSortBy(params) {
   console.log(params);
   return params
@@ -62,16 +64,8 @@ function createSortBy(params) {
     .join(",");
 }
 
-// function createWhere(key, values) {
-//   const keyOpSplit = key.split(".");
-//   const keyOp = `${db.escapeId(keyOpSplit[0])} ${inputToOperator(
-//     keyOpSplit[1]
-//   )}`;
-//   if (Array.isArray(values))
-//     return values.map(el => `${keyOp} ${db.escape(el)}`);
-//   return [`${keyOp} ${db.escape(values)}`];
-// }
-
+//builds an array strings which can be joined to create a WHERE query
+//returns a string in the format '{escaped column} {operator} {escaped value}' ex. '`table` >= `10`'
 function createWhere(key, values) {
   //if multiple values where passed
   if (Array.isArray(values))
@@ -82,12 +76,19 @@ function createWhere(key, values) {
   return `${db.escapeId(key)} ${operatorValueParse(values)}`;
 }
 
+//takes a value which may contain an operator in addition to the value and returns both as a string in the proper format
 function operatorValueParse(input) {
+  //splits the operator and the value on the ':' character
   let opValSplit = input.split(":");
-  if (opValSplit.length == 1) return `= ${db.escape(input)}`;
-  return `${inputToOperator(opValSplit[0])} ${db.escape(opValSplit[1])}`;
+  //checks if an operator was passed
+  //if not returns an escaped version of the input
+  //if it was returns a string in the format '{operator} {escaped value}' ex. '<> `dog`'
+  opValSplit.length == 1
+    ? `= ${db.escape(input)}`
+    : `${inputToOperator(opValSplit[0])} ${db.escape(opValSplit[1])}`;
 }
 
+//takes and input and returns the ocrresponding sql operator
 function inputToOperator(input) {
   let operator;
   switch (input) {
