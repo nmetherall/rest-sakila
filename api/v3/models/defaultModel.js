@@ -8,9 +8,9 @@ const escapeReq = (req)=>{
   const table = req.params.table;
   const id = req.params.id;
   return{
-    table: table ? mysql.escapeId(req.params.table) : '',
-    idField: table ? mysql.escapeId(`${req.params.table}_id`): '',
-    id: id ? mysql.escape(req.params.id): '',
+    table: table ? mysql.escapeId(id) : '',
+    idField: table ? mysql.escapeId(`${table}_id`): '',
+    id: id ? mysql.escape(id): '',
     columns: hasBody ? Object.keys(req.body).map(el => mysqlDb.escapeId(el)) : '',
     rows : hasBody ? Object.values(req.body).map(el => mysqlDb.escape(el)) : ''
   }
