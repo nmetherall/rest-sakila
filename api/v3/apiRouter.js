@@ -21,16 +21,6 @@ router.get("/RESERVED", (req, res) => {
 
 //generic bridge table model
 const bridgeTableModel = require("./models/bridgeTableModel");
-router.use(
-  "/:baseTable/:baseId/:targetTable",
-  (req, res, next) => {
-    req.baseTable = req.params.baseTable;
-    req.baseId = req.params.baseId;
-    req.targetTable = req.params.targetTable;
-    next();
-  },
-  bridgeTableModel
-);
 
 router.route("/:baseTable/:baseId/:targetTable")
   .get()
@@ -46,7 +36,7 @@ const defaultModel = require("./models/defaultModel");
 router.route("/:table")
   .get(defaultModel.getAll)
   .post(defaultModel.post);
-  
+
 router.route("/:table/:id")
   .get(defaultModel.get)
   .put(defaultModel.put)
