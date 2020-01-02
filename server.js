@@ -22,7 +22,7 @@ server.use("/api_v1", apiv1);
 const apiv2 = require("./api/v2/api.js");
 server.use("/api_v2", apiv2);
 //api_v3
-const apiv3 = require("./api/v3/api.js");
+const apiv3 = require("./api/v3/apiRouter.js");
 server.use("/api_v3", apiv3);
 
 //Default Path

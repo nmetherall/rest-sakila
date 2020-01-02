@@ -1,121 +1,97 @@
-const express = require("express");
-const router = express.Router();
-
+const mysql = require('mysql');
 const mysqlDb = require("../../../mysqlConnection");
-const db = mysqlDb.database;
-
 const queryParse = require("../urlQueryParser");
 
-//GET: SELECT ALL
-router.get("/:table", (req, res) => {
-  //escaped table name
-  const table = db.escapeId(req.params.table);
+//method that takes requests and returns the params as mysql escaped strings
+const escapeReq = (req)=>{
+  const hasBody = !!req.body.length;
+  const table = req.params.table;
+  const id = req.params.id;
+  return{
+    table: table ? mysql.escapeId(req.params.table) : '',
+    idField: table ? mysql.escapeId(`${req.params.table}_id`): '',
+    id: id ? mysql.escape(req.params.id): '',
+    columns: hasBody ? Object.keys(req.body).map(el => mysqlDb.escapeId(el)) : '',
+    rows : hasBody ? Object.values(req.body).map(el => mysqlDb.escape(el)) : ''
+  }
+}
 
-  //json object of a parsed url query
-  const parsedQuery = queryParse(req.query);
+module.exports = {
+  //GET /:table
+  getAll: (req,res)=>{
+    //escaped table name
+    const table = mysql.escapeId(req.params.table);
+  
+    //json object of a parsed url query
+    const parsedQuery = queryParse(req.query);
+  
+    //database query and response
+    mysqlDb.query(res,
+      `SELECT ${parsedQuery.fields} FROM ${table}
+      ${parsedQuery.where ? `WHERE ${parsedQuery.where}` : ""}
+      ${parsedQuery.orderBy ? `ORDER BY ${parsedQuery.orderBy}` : ""}
+      ${parsedQuery.limit}
+      ${parsedQuery.offset}`
+    );
+  },   
 
-  //SQL statement
-  const sql = `SELECT ${parsedQuery.fields} FROM ${table}
-  ${parsedQuery.where ? `WHERE ${parsedQuery.where}` : ""}
-  ${parsedQuery.orderBy ? `ORDER BY ${parsedQuery.orderBy}` : ""}
-  ${parsedQuery.limit}
-  ${parsedQuery.offset}`;
+  //POST /:table
+  post: (req,res)=>{
+    //escaped values from request
+    const escaped = escapeReq(req);
 
-  console.log("parse:", parsedQuery);
-  console.log("sql:", sql);
-  //database query and response
-  db.query(sql, (err, results) => {
-    if (err) res.status(400).json(err);
-    res.status(200).json(results);
-  });
-});
+    //database query and response
+    mysqlDb.query(res,
+      `INSERT INTO ${escaped.table} 
+      (${escaped.columns.join(", ")}) 
+      VALUES(${escaped.rows.join(", ")})`
+    );
+  },
 
-//GET{ID}: SELECT by id
-router.get("/:table/:id", (req, res) => {
-  //escaped table name, id field, and id number
-  const table = db.escapeId(req.params.table);
-  const idField = db.escapeId(`${req.params.table}_id`);
-  const id = db.escape(req.params.id);
+    
+  //GET /:table/:id
+  get: (req,res)=>{
+    //escaped table name, id field, and id number
+    const escaped = escapeReq(req);
+  
+    //json object of a parsed url query
+    const parsedQuery = queryParse(req.query);
+  
+    //database query and response
+    mysqlDb.query(res,
+      `SELECT ${parsedQuery.fields} FROM ${escaped.table} 
+      WHERE ${escaped.idField} = ${escaped.id}`
+    );
+  },
 
-  //json object of a parsed url query
-  const parsedQuery = queryParse(req.query);
+  //PUT /:table/:id
+  put: (req, res) => {
+    //escaped values from request
+    const escaped = escapeReq(req);
 
-  //SQL statement
-  const sql = `SELECT ${parsedQuery.fields} FROM ${table} 
-	WHERE ${idField} = ${id}`;
+    const rows = escaped.rows;
+    //keys and values are formated and mapped to an array
+    const pairs = escaped.columns.map((el, index) => {
+      return `${el}=${rows[index]}`;
+    });
 
-  //database query and response
-  db.query(sql, (err, results) => {
-    if (err) res.status(400).json(err);
-    res.status(200).json(results);
-  });
-});
+    //database query and response
+    mysqlDb.query(res,
+      `UPDATE ${escaped.table} 
+      SET ${pairs.join(", ")} 
+      WHERE ${escaped.idField} = ${escaped.id}`
+    );
+  },
+  
+  //DELETE /:table/:id
+  delete: (req,res)=>{
+    //escaped table name, id field, and id number
+    const escaped = escapeReq(req);
 
-//POST: INSERT new row
-router.post("/:table", (req, res) => {
-  //escaped table name
-  const table = db.escapeId(req.params.table);
-
-  //escaped columns and rows from body
-  const columns = Object.keys(req.body).map(el => db.escapeId(el));
-  const rows = Object.values(req.body).map(el => db.escape(el));
-
-  //SQL statement
-  const sql = `INSERT INTO ${table} 
-	(${columns.join(", ")}) 
-	VALUES(${rows.join(", ")})`;
-
-  //database query and response
-  db.query(sql, (err, results) => {
-    if (err) res.status(400).json(err);
-    res.status(201).send(results);
-  });
-});
-
-//PUT{ID}: UPDATE existing row
-router.put("/:table/:id", (req, res) => {
-  //escaped table name, id field, and id number
-  const table = db.escapeId(req.params.table);
-  const idField = db.escapeId(`${req.params.table}_id`);
-  const id = db.escape(req.params.id);
-
-  //escaped columns and rows from body
-  const columns = Object.keys(req.body).map(el => db.escapeId(el));
-  const rows = Object.values(req.body).map(el => db.escape(el));
-
-  //keys and values are formated and mapped to an array
-  const pairs = columns.map((el, index) => {
-    return `${el}=${rows[index]}`;
-  });
-
-  //SQL statement
-  const sql = `UPDATE ${table} 
-	SET ${pairs.join(", ")} 
-	WHERE ${idField} = ${id}`;
-
-  //database query and response
-  db.query(sql, (err, results) => {
-    if (err) res.status(400).json(err);
-    res.status(200).json(results);
-  });
-});
-
-//DELETE{ID}: DELETE by id
-router.delete("/:table/:id", (req, res) => {
-  //escaped table name, id field, and id number
-  const table = db.escapeId(req.params.table);
-  const idField = db.escapeId(`${req.params.table}_id`);
-  const id = db.escape(req.params.id);
-
-  //SQL statement
-  const sql = `DELETE FROM ${table} 
-	WHERE ${idField} = ${id}`;
-
-  //database query and response
-  db.query(sql, (err, results) => {
-    if (err) res.status(400).json(err);
-    res.status(200).json(results);
-  });
-});
-
-module.exports = router;
+    //database query and response
+    mysqlDb.query(res,
+      `DELETE FROM ${escaped.table} 
+      WHERE ${escaped.idField} = ${escaped.id}`
+    );
+  }
+};

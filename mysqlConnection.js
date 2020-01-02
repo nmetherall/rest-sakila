@@ -16,4 +16,15 @@ let tables = [];
 database.query(`SHOW tables`, (req, res) => {
   this.tables = res.forEach(el => tables.push(el.Tables_in_sakila));
 });
-module.exports = { database, tables };
+
+const query = (res,sql) => {
+  database.query(sql, (err, results) => {
+    if (err) res.status(400).json(err);
+    res.status(200).send(results);
+  });
+}
+module.exports = { 
+  database, 
+  tables, 
+  query
+};

@@ -36,17 +36,20 @@ router.route("/:baseTable/:baseId/:targetTable")
   .get()
   .post();
 router.route("/:baseTable/:baseId/:targetTable/:targetId")
-
-//Default Model if no specific path defined in api
-const model = require("./models/defaultModel");
-router.use("/", model);
-
-router.route("/:table")
-  .get()
-  .post();
-router.route("/:table/:id")
   .get()
   .delete()
   .put();
+
+//Default Model if no specific path defined in api
+const defaultModel = require("./models/defaultModel");
+
+router.route("/:table")
+  .get(defaultModel.getAll)
+  .post(defaultModel.post);
+  
+router.route("/:table/:id")
+  .get(defaultModel.get)
+  .put(defaultModel.put)
+  .delete(defaultModel.delete);
 
 module.exports = router;
