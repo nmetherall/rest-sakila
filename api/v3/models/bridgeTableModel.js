@@ -50,7 +50,7 @@ module.exports = {
    * @param {string} baseId - The primary key of the base table
    * @param {string} targetTable - The table that contains related records to the base table at the base id
    * @param {json} req - the request from the express http request
-   * @param {json} res - the respons for the express http request
+   * @param {json} res - the respons for the express http
    */
   getAll: (req, res) => {
     //calls a helper to help parse the request
