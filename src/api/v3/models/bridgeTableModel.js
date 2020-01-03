@@ -7,18 +7,16 @@ const queryParse = require("../urlQueryParser");
  * @returns {json} a json element containing seperated and escaped values from the rquest
  */
 const escapeReq = req => {
-  //escapes entered path values
+  const hasBody = !!req.body.length;
   return {
-    baseTable: mysqlDb.escapeId(req.baseTable),
-    baseIdField: mysqlDb.escapeId(`${req.baseTable}_id`),
-    baseId: mysqlDb.escape(req.baseId),
-    targetTable: mysqlDb.escapeId(req.targetTable),
-    targetIdField: mysqlDb.escapeId(`${req.targetTable}_id`),
-    targetId: mysqlDb.escape(req.params.targetId),
-    columns: hasBody
-      ? Object.keys(req.body).map(el => mysqlDb.escapeId(el))
-      : "",
-    rows: hasBody ? Object.values(req.body).map(el => mysqlDb.escape(el)) : "",
+    baseTable: mysql.escapeId(req.params.baseTable),
+    baseIdField: mysql.escapeId(`${req.params.baseTable}_id`),
+    baseId: mysql.escape(req.params.baseId),
+    targetTable: mysql.escapeId(req.params.targetTable),
+    targetIdField: mysql.escapeId(`${req.params.targetTable}_id`),
+    targetId: mysql.escape(req.params.targetId),
+    columns: hasBody ? Object.keys(req.body).map(el => mysql.escapeId(el)) : "",
+    rows: hasBody ? Object.values(req.body).map(el => mysql.escape(el)) : "",
     tableName: checkTableName(req)
   };
 };
@@ -31,15 +29,18 @@ const escapeReq = req => {
  * @returns {string} returns an escaped version of the bridge table name
  */
 const checkTableName = req => {
-  let tableName = tables.includes(`${req.baseTable}_${req.targetTable}`)
-    ? `${req.baseTable}_${req.targetTable}`
-    : tables.includes(`${req.targetTable}_${req.baseTable}`)
-    ? `${req.targetTable}_${req.baseTable}`
-    : null;
+  const tables = mysqlDb.tables;
+  const baseTarget = `${req.params.baseTable}_${req.params.targetTable}`;
+  const targetBase = `${req.params.targetTable}_${req.params.baseTable}`;
 
+  let tableName = tables.includes(baseTarget)
+    ? baseTarget
+    : tables.includes(targetBase)
+    ? targetBase
+    : null;
   //throws an error if the bridge table isn't found
   if (!tableName) throw new Error("Not a valid bridge table");
-  return mysqlDb.escapeId(tableName);
+  return mysql.escapeId(tableName);
 };
 
 module.exports = {
