@@ -12,7 +12,7 @@ database.connect(function(err) {
   console.log(`Connected to ${database.config.database}`);
 });
 
-let tables = [];
+const tables = [];
 database.query(`SHOW tables`, (req, res) => {
   this.tables = res.forEach(el => tables.push(el.Tables_in_sakila));
 });

@@ -5,12 +5,10 @@ const queryParse = require("../urlQueryParser");
 //method that takes requests and returns the params as mysql escaped strings
 const escapeReq = (req)=>{
   const hasBody = !!req.body.length;
-  const table = req.params.table;
-  const id = req.params.id;
   return{
-    table: table ? mysql.escapeId(table) : '',
-    idField: table ? mysql.escapeId(`${table}_id`): '',
-    id: id ? mysql.escape(req.params.id): '',
+    table: mysql.escapeId(req.params.table),
+    idField: mysql.escapeId(`${req.params.table}_id`),
+    id: mysql.escape(req.params.id),
     columns: hasBody ? Object.keys(req.body).map(el => mysqlDb.escapeId(el)) : '',
     rows : hasBody ? Object.values(req.body).map(el => mysqlDb.escape(el)) : ''
   }
