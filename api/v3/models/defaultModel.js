@@ -1,62 +1,66 @@
-const mysql = require('mysql');
+const mysql = require("mysql");
 const mysqlDb = require("../../../mysqlConnection");
 const queryParse = require("../urlQueryParser");
 
 //method that takes requests and returns the params as mysql escaped strings
-const escapeReq = (req)=>{
+const escapeReq = req => {
   const hasBody = !!req.body.length;
-  return{
+  return {
     table: mysql.escapeId(req.params.table),
     idField: mysql.escapeId(`${req.params.table}_id`),
     id: mysql.escape(req.params.id),
-    columns: hasBody ? Object.keys(req.body).map(el => mysqlDb.escapeId(el)) : '',
-    rows : hasBody ? Object.values(req.body).map(el => mysqlDb.escape(el)) : ''
-  }
-}
+    columns: hasBody
+      ? Object.keys(req.body).map(el => mysqlDb.escapeId(el))
+      : "",
+    rows: hasBody ? Object.values(req.body).map(el => mysqlDb.escape(el)) : ""
+  };
+};
 
 module.exports = {
   //GET /:table
-  getAll: (req,res)=>{
+  getAll: (req, res) => {
     //escaped table name
     const table = mysql.escapeId(req.params.table);
-  
+
     //json object of a parsed url query
     const parsedQuery = queryParse(req.query);
-  
+
     //database query and response
-    mysqlDb.query(res,
+    mysqlDb.query(
+      res,
       `SELECT ${parsedQuery.fields} FROM ${table}
       ${parsedQuery.where ? `WHERE ${parsedQuery.where}` : ""}
       ${parsedQuery.orderBy ? `ORDER BY ${parsedQuery.orderBy}` : ""}
       ${parsedQuery.limit}
       ${parsedQuery.offset}`
     );
-  },   
+  },
 
   //POST /:table
-  post: (req,res)=>{
+  post: (req, res) => {
     //escaped values from request
     const escaped = escapeReq(req);
 
     //database query and response
-    mysqlDb.query(res,
+    mysqlDb.query(
+      res,
       `INSERT INTO ${escaped.table} 
       (${escaped.columns.join(", ")}) 
       VALUES(${escaped.rows.join(", ")})`
     );
   },
 
-    
   //GET /:table/:id
-  get: (req,res)=>{
+  get: (req, res) => {
     //escaped table name, id field, and id number
     const escaped = escapeReq(req);
-  
+
     //json object of a parsed url query
     const parsedQuery = queryParse(req.query);
-  
+
     //database query and response
-    mysqlDb.query(res,
+    mysqlDb.query(
+      res,
       `SELECT ${parsedQuery.fields} FROM ${escaped.table} 
       WHERE ${escaped.idField} = ${escaped.id}`
     );
@@ -74,20 +78,22 @@ module.exports = {
     });
 
     //database query and response
-    mysqlDb.query(res,
+    mysqlDb.query(
+      res,
       `UPDATE ${escaped.table} 
       SET ${pairs.join(", ")} 
       WHERE ${escaped.idField} = ${escaped.id}`
     );
   },
-  
+
   //DELETE /:table/:id
-  delete: (req,res)=>{
+  delete: (req, res) => {
     //escaped table name, id field, and id number
     const escaped = escapeReq(req);
 
     //database query and response
-    mysqlDb.query(res,
+    mysqlDb.query(
+      res,
       `DELETE FROM ${escaped.table} 
       WHERE ${escaped.idField} = ${escaped.id}`
     );

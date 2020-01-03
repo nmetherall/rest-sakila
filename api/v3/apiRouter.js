@@ -21,23 +21,24 @@ router.get("/RESERVED", (req, res) => {
 
 //generic bridge table model
 const bridgeTableModel = require("./models/bridgeTableModel");
-
-router.route("/:baseTable/:baseId/:targetTable")
-  .get()
-  .post();
-router.route("/:baseTable/:baseId/:targetTable/:targetId")
-  .get()
-  .delete()
-  .put();
+router
+  .route("/:baseTable/:baseId/:targetTable")
+  .get(bridgeTableModel.getAll)
+  .post(bridgeTableModel.post);
+router
+  .route("/:baseTable/:baseId/:targetTable/:targetId")
+  .get(bridgeTableModel.get)
+  .put(bridgeTableModel.put)
+  .delete(bridgeTableModel.delete);
 
 //Default Model if no specific path defined in api
 const defaultModel = require("./models/defaultModel");
-
-router.route("/:table")
+router
+  .route("/:table")
   .get(defaultModel.getAll)
   .post(defaultModel.post);
-
-router.route("/:table/:id")
+router
+  .route("/:table/:id")
   .get(defaultModel.get)
   .put(defaultModel.put)
   .delete(defaultModel.delete);
