@@ -28,6 +28,7 @@ module.exports = {
       .select(urlQuery.fields)
       .from(req.params.table)
       .where(urlQuery.columns)
+      .orderBy(urlQuery.orderBy)
       .limit(urlQuery.limit)
       .offset(urlQuery.offset).sql;
     mysqlDb.query(res, sql);
