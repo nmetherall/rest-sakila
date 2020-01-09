@@ -18,11 +18,13 @@ database.query(`SHOW tables`, (req, res) => {
 });
 
 const query = (res, sql) => {
+  console.log(sql);
   database.query(sql, (err, results) => {
     if (err) res.status(400).json(err);
     res.status(200).send(results);
   });
 };
+
 module.exports = {
   database,
   tables,
