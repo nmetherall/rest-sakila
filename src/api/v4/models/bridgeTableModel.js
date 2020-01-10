@@ -1,6 +1,4 @@
-const mysql = require("mysql");
 const mysqlDb = require("../../../mysqlConnection");
-const queryParse = require("../urlQueryParser");
 
 const uP = require("../urlParse");
 const qB = require("../queryBuilder");
