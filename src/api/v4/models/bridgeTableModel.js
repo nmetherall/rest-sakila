@@ -28,12 +28,9 @@ const checkTableName = req => {
 module.exports = {
   /**
    * GET /:baseTable/:baseId/:targetTable
-   * Responds with all records from the target table that belong to the base table
-   * @param {string} baseTable - The name of the table which is the starting point
-   * @param {string} baseId - The primary key of the base table
-   * @param {string} targetTable - The table that contains related records to the base table at the base id
-   * @param {json} req - the request from the express http request
-   * @param {json} res - the respons for the express http
+   * Responds with all records from the target table that belong to the base table.
+   * @param {json} req  the request from the express http request
+   * @param {json} res  the respons for the express http
    */
   getAll: (req, res) => {
     const table = checkTableName(req);
