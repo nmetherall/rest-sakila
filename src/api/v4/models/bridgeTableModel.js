@@ -2,24 +2,8 @@ const mysql = require("mysql");
 const mysqlDb = require("../../../mysqlConnection");
 const queryParse = require("../urlQueryParser");
 
-/**Method to parse and escape request parameters
- * @param {json} req - request passed from express router
- * @returns {json} a json element containing seperated and escaped values from the rquest
- */
-const escapeReq = req => {
-  const hasBody = !!req.body.length;
-  return {
-    baseTable: mysql.escapeId(req.params.baseTable),
-    baseIdField: mysql.escapeId(`${req.params.baseTable}_id`),
-    baseId: mysql.escape(req.params.baseId),
-    targetTable: mysql.escapeId(req.params.targetTable),
-    targetIdField: mysql.escapeId(`${req.params.targetTable}_id`),
-    targetId: mysql.escape(req.params.targetId),
-    columns: hasBody ? Object.keys(req.body).map(el => mysql.escapeId(el)) : "",
-    rows: hasBody ? Object.values(req.body).map(el => mysql.escape(el)) : "",
-    tableName: checkTableName(req)
-  };
-};
+const uP = require("../urlParse");
+const qB = require("../queryBuilder");
 
 /**
  * figures out the table name no matter which order it was entered in the request
@@ -40,7 +24,7 @@ const checkTableName = req => {
     : null;
   //throws an error if the bridge table isn't found
   if (!tableName) throw new Error("Not a valid bridge table");
-  return mysql.escapeId(tableName);
+  return tableName;
 };
 
 module.exports = {
@@ -54,105 +38,80 @@ module.exports = {
    * @param {json} res - the respons for the express http
    */
   getAll: (req, res) => {
-    //calls a helper to help parse the request
-    const escaped = escapeReq(req);
+    const table = checkTableName(req);
+    const urlParse = uP(req.query);
 
-    //json object of a parsed url query
-    const parsedQuery = queryParse(req.query);
+    const sql = qB()
+      .select(urlParse.fields)
+      .from(table)
+      .join({
+        table: req.params.targetTable,
+        onColumn: `${req.params.targetTable}_id`
+      })
+      .where({
+        column: `a.${req.params.baseTable}_id`,
+        value: req.params.baseId
+      })
+      .and(urlParse.conditions)
+      .orderBy(urlParse.orderBy)
+      .limit(urlParse.limit)
+      .offset(urlParse.offset).sql;
 
-    //database query
-    mysqlDb.query(
-      res,
-      `SELECT ${parsedQuery.fields}
-      FROM ${escaped.tableName}
-      INNER JOIN ${escaped.targetTable}
-      ON ${escaped.targetTable}.${escaped.targetIdField}= ${
-        escaped.tableName
-      }.${escaped.targetIdField}
-      WHERE ${escaped.tableName}.${escaped.baseIdField}=${escaped.baseId}
-      ${
-        parsedQuery.where
-          ? ` AND ${escaped.targetTable}.${parsedQuery.where}`
-          : ""
-      }
-      ${
-        parsedQuery.orderBy
-          ? `ORDER BY ${escaped.targetTable}.${parsedQuery.orderBy}`
-          : ""
-      }
-      ${parsedQuery.limit}
-      ${parsedQuery.offset}`
-    );
+    mysqlDb.query(res, sql);
   },
 
   //POST: /:baseTable/:baseId/:targetTable
   post: (req, res) => {
-    //calls a helper to help parse the request
-    const escaped = escapeReq(req);
+    const table = checkTableName(req);
 
-    //database query
-    mysqlDb.query(
-      res,
-      `INSERT INTO ${escaped.tableName} 
-      (${escaped.columns.join(", ")}) 
-      VALUES(${escaped.rows.join(", ")})`
-    );
+    const sql = qB()
+      .insertInto(table)
+      .set(req.body).sql;
+    mysqlDb.query(res, sql);
   },
 
   //GET /:baseTable/:baseId/:targetTable/:targetId
   get: (req, res) => {
-    //calls a helper to help parse the request
-    const escaped = escapeReq(req);
-
-    //json object of a parsed url query
-    const parsedQuery = queryParse(req.query);
-
-    //database query and response
-    mysqlDb.query(
-      res,
-      `SELECT ${parsedQuery.fields}
-      FROM ${escaped.tableName}
-	    INNER JOIN ${escaped.targetTable}
-      ON ${escaped.targetTable}.${escaped.targetIdField}= ${escaped.tableName}.${escaped.targetIdField}
-      INNER JOIN ${escaped.baseTable}
-	    ON ${escaped.baseTable}.${escaped.baseIdField}= ${escaped.tableName}.${escaped.baseIdField}
-      WHERE ${escaped.tableName}.${escaped.baseIdField}=${escaped.baseId} 
-      AND ${escaped.tableName}.${escaped.targetIdField}=${targetId}`
+    res.redirect(
+      301,
+      `../../../${req.params.targetTable}/${req.params.targetId}`
     );
   },
 
   //PUT /:baseTable/:baseId/:targetTable/:targetId
   put: (req, res) => {
-    //calls a helper to help parse the request
-    const escaped = escapeReq(req);
+    const table = checkTableName(req);
 
-    const rows = escaped.rows;
-    //keys and values are formated and mapped to an array
-    const pairs = escaped.columns.map((el, index) => {
-      return `${el}=${rows[index]}`;
-    });
+    const sql = qB()
+      .update(table)
+      .set(req.body)
+      .where({
+        column: `${req.params.baseTable}_id`,
+        value: req.params.baseId
+      })
+      .and({
+        column: `${req.params.targetTable}_id`,
+        value: req.params.targetId
+      }).sql;
 
-    //database query and response
-    mysqlDb.query(
-      res,
-      `UPDATE ${escaped.tableName} 
-  	  SET ${pairs.join(", ")} 
-  	  WHERE ${escaped.baseIdField} = ${escaped.baseId} 
-      AND ${escaped.targetIdField} = ${targetId}`
-    );
+    mysqlDb.query(res, sql);
   },
 
   //DELETE /:baseTable/:baseId/:targetTable/:targetId
   delete: (req, res) => {
-    //calls a helper to help parse the request
-    const escaped = escapeReq(req);
+    const table = checkTableName(req);
 
-    //database query and response
-    mysqlDb.query(
-      req,
-      `DELETE FROM ${escaped.tableName} 
-	    WHERE ${escaped.baseIdField} = ${escaped.baseId} 
-  	  AND ${escaped.targetIdField} = ${targetId}`
-    );
+    const sql = qB()
+      .deleteFrom(table)
+      .where({
+        column: `${req.params.baseTable}_id`,
+        value: req.params.baseId
+      })
+      .and({
+        column: `${req.params.targetTable}_id`,
+        value: req.params.targetId
+      }).sql;
+
+    mysqlDb.query(res, sql);
   }
 };

@@ -4,15 +4,14 @@ class queryBuilder {
   constructor() {
     this.sql = "";
   }
+
   /**
    *
    */
   select(fields) {
     if (fields) {
-      fields = fields
-        .split(",")
-        .map(el => sqlstring.escapeId(el))
-        .join(",");
+      if (!Array.isArray(fields)) fields = fields.split(",");
+      fields = fields.map(el => sqlstring.escapeId(el)).join(",");
       this.sql += `SELECT ${fields}`;
     } else this.sql += "SELECT * ";
     return this;
@@ -29,6 +28,44 @@ class queryBuilder {
   /**
    *
    */
+  deleteFrom(table) {
+    this.sql += `\nDELETE FROM ${sqlstring.escapeId(table)} a`;
+    return this;
+  }
+
+  /**
+   *
+   */
+  insertInto(table) {
+    this.sql += `\nINSERT INTO ${sqlstring.escapeId(table)}`;
+    return this;
+  }
+
+  /**
+   *
+   */
+  update(table) {
+    this.sql += `\nUPDATE ${sqlstring.escapeId(table)}`;
+    return this;
+  }
+
+  /**
+   *
+   */
+  set(changes) {
+    this.sql += sqlstring.format(" SET ?", changes);
+    return this;
+  }
+
+  /**
+   * takes a JSON
+   * {
+   *    type: (inner, left, right, full)
+   *    table: (table b to be joined)
+   *    aColumn: (column from table a to join on)
+   *    bColumn: (column from table b to join on)
+   * }
+   */
   join(join) {
     if (join) this.sql += `\n${joinBuilder(join)}`;
     return this;
@@ -38,23 +75,42 @@ class queryBuilder {
    *
    */
   where(conditions) {
-    const out = conditions
-      .map(el => {
-        const column = sqlstring.escapeId(el.column);
-        const operator = getOperator(el.operator);
-        const value = sqlstring.escape(el.value);
-
-        return `${column} ${operator} ${value}`;
-      })
-      .join(" AND ");
-    if (out.length) this.sql += `\nWHERE${out}`;
+    if (!conditions) return this;
+    let out = whereBuilder(conditions);
+    if (out.length) this.sql += `\nWHERE ${out}`;
     return this;
   }
 
   /**
    *
    */
+  and(conditions) {
+    if (!conditions) return this;
+    let out = whereBuilder(conditions);
+    if (out.length) this.sql += ` AND ${out}`;
+    return this;
+  }
+
+  or(conditions) {
+    if (!conditions) return this;
+    let out = whereBuilder(conditions);
+    if (out.length) this.sql += ` OR ${out}`;
+    return this;
+  }
+
+  in(values) {
+    if (!Array.isArray(values)) values = values.split(",");
+    values = values.map(el => sqlstring.escapeId(el)).join(",");
+    this.sql += ` IN (${values})`;
+  }
+
+  /**
+   *
+   */
   orderBy(orderBy) {
+    if (!orderBy) return this;
+    if (!Array.isArray(orderBy)) orderBy = [orderBy];
+
     const out = orderBy
       .map(el => {
         const column = sqlstring.escapeId(el.column);
@@ -128,6 +184,20 @@ const getOrderOperator = operator => {
   }
 };
 
+const whereBuilder = conditions => {
+  if (!Array.isArray(conditions)) conditions = [conditions];
+
+  return conditions
+    .map(el => {
+      const column = sqlstring.escapeId(el.column);
+      const operator = getOperator(el.operator);
+      const value = sqlstring.escape(el.value);
+
+      return `${column} ${operator} ${value}`;
+    })
+    .join(" AND ");
+};
+
 const joinBuilder = join => {
   let type;
   let joinType = join.type;
@@ -144,12 +214,15 @@ const joinBuilder = join => {
     default:
       type = "";
   }
-  sqlstring.format(
-    `${type}JOIN ? b ON a.? = b.?`,
+
+  if (join.onColumn) join.onColumnA = join.onColumnB = join.onColumn;
+
+  return sqlstring.format(`${type}JOIN ?? b ON a.?? = b.??`, [
     join.table,
-    join.aColumn,
-    join.bColumn
-  );
+    join.onColumnA,
+    join.onColumnB
+  ]);
 };
 
-module.exports = { builder: () => new queryBuilder() };
+const builder = () => new queryBuilder();
+module.exports = builder;

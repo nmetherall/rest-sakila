@@ -1,33 +1,16 @@
-const mysql = require("mysql");
 const mysqlDb = require("../../../mysqlConnection");
-const queryParse = require("../urlQueryParser");
 
 const uP = require("../urlParse");
 const qB = require("../queryBuilder");
-
-//method that takes requests and returns the params as mysql escaped strings
-const escapeReq = req => {
-  const hasBody = !!req.body.length;
-  return {
-    table: mysql.escapeId(req.params.table),
-    idField: mysql.escapeId(`${req.params.table}_id`),
-    id: mysql.escape(req.params.id),
-    columns: hasBody
-      ? Object.keys(req.body).map(el => mysqlDb.escapeId(el))
-      : "",
-    rows: hasBody ? Object.values(req.body).map(el => mysqlDb.escape(el)) : ""
-  };
-};
 
 module.exports = {
   //GET /:table
   getAll: (req, res) => {
     let urlQuery = uP(req.query);
-    let sql = qB
-      .builder()
+    let sql = qB()
       .select(urlQuery.fields)
       .from(req.params.table)
-      .where(urlQuery.columns)
+      .where(urlQuery.conditions)
       .orderBy(urlQuery.orderBy)
       .limit(urlQuery.limit)
       .offset(urlQuery.offset).sql;
@@ -36,64 +19,45 @@ module.exports = {
 
   //POST /:table
   post: (req, res) => {
-    //escaped values from request
-    const escaped = escapeReq(req);
-
-    //database query and response
-    mysqlDb.query(
-      res,
-      `INSERT INTO ${escaped.table} 
-      (${escaped.columns.join(", ")}) 
-      VALUES(${escaped.rows.join(", ")})`
-    );
+    let sql = qB()
+      .insertInto(req.params.table)
+      .set(req.body).sql;
+    mysqlDb.query(res, sql);
   },
 
   //GET /:table/:id
   get: (req, res) => {
-    //escaped table name, id field, and id number
-    const escaped = escapeReq(req);
-
-    //json object of a parsed url query
-    const parsedQuery = queryParse(req.query);
-
-    //database query and response
-    mysqlDb.query(
-      res,
-      `SELECT ${parsedQuery.fields} FROM ${escaped.table} 
-      WHERE ${escaped.idField} = ${escaped.id}`
-    );
+    let urlQuery = uP(req.query);
+    let sql = qB()
+      .select(urlQuery.fields)
+      .from(req.params.table)
+      .where({
+        column: `${req.params.table}_id`,
+        value: req.params.id
+      }).sql;
+    mysqlDb.query(res, sql);
   },
 
   //PUT /:table/:id
   put: (req, res) => {
-    //escaped values from request
-    const escaped = escapeReq(req);
-
-    const rows = escaped.rows;
-    //keys and values are formated and mapped to an array
-    const pairs = escaped.columns.map((el, index) => {
-      return `${el}=${rows[index]}`;
-    });
-
-    //database query and response
-    mysqlDb.query(
-      res,
-      `UPDATE ${escaped.table} 
-      SET ${pairs.join(", ")} 
-      WHERE ${escaped.idField} = ${escaped.id}`
-    );
+    let sql = qB()
+      .update(req.params.table)
+      .set(req.params.body)
+      .where({
+        column: `${req.params.table}_id`,
+        value: req.params.id
+      }).sql;
+    mysqlDb.query(res, sql);
   },
 
   //DELETE /:table/:id
   delete: (req, res) => {
-    //escaped table name, id field, and id number
-    const escaped = escapeReq(req);
-
-    //database query and response
-    mysqlDb.query(
-      res,
-      `DELETE FROM ${escaped.table} 
-      WHERE ${escaped.idField} = ${escaped.id}`
-    );
+    let sql = qB()
+      .deleteFrom(req.params.table)
+      .where({
+        column: `${req.params.table}_id`,
+        value: req.params.id
+      }).sql;
+    mysqlDb.query(res, sql);
   }
 };
