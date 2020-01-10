@@ -27,12 +27,12 @@ module.exports = {
 
     //database query and response
     mysqlDb.query(
-      res,
       `SELECT ${parsedQuery.fields} FROM ${table}
       ${parsedQuery.where ? `WHERE ${parsedQuery.where}` : ""}
       ${parsedQuery.orderBy ? `ORDER BY ${parsedQuery.orderBy}` : ""}
       ${parsedQuery.limit}
-      ${parsedQuery.offset}`
+      ${parsedQuery.offset}`,
+      res
     );
   },
 
@@ -43,10 +43,10 @@ module.exports = {
 
     //database query and response
     mysqlDb.query(
-      res,
       `INSERT INTO ${escaped.table} 
       (${escaped.columns.join(", ")}) 
-      VALUES(${escaped.rows.join(", ")})`
+      VALUES(${escaped.rows.join(", ")})`,
+      res
     );
   },
 
@@ -60,9 +60,9 @@ module.exports = {
 
     //database query and response
     mysqlDb.query(
-      res,
       `SELECT ${parsedQuery.fields} FROM ${escaped.table} 
-      WHERE ${escaped.idField} = ${escaped.id}`
+      WHERE ${escaped.idField} = ${escaped.id}`,
+      res
     );
   },
 
@@ -79,10 +79,10 @@ module.exports = {
 
     //database query and response
     mysqlDb.query(
-      res,
       `UPDATE ${escaped.table} 
       SET ${pairs.join(", ")} 
-      WHERE ${escaped.idField} = ${escaped.id}`
+      WHERE ${escaped.idField} = ${escaped.id}`,
+      res
     );
   },
 
@@ -93,9 +93,9 @@ module.exports = {
 
     //database query and response
     mysqlDb.query(
-      res,
       `DELETE FROM ${escaped.table} 
-      WHERE ${escaped.idField} = ${escaped.id}`
+      WHERE ${escaped.idField} = ${escaped.id}`,
+      res
     );
   }
 };

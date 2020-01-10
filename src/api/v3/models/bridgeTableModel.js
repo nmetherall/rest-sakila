@@ -62,7 +62,6 @@ module.exports = {
 
     //database query
     mysqlDb.query(
-      res,
       `SELECT ${parsedQuery.fields}
       FROM ${escaped.tableName}
       INNER JOIN ${escaped.targetTable}
@@ -81,7 +80,8 @@ module.exports = {
           : ""
       }
       ${parsedQuery.limit}
-      ${parsedQuery.offset}`
+      ${parsedQuery.offset}`,
+      res
     );
   },
 
@@ -92,10 +92,10 @@ module.exports = {
 
     //database query
     mysqlDb.query(
-      res,
       `INSERT INTO ${escaped.tableName} 
       (${escaped.columns.join(", ")}) 
-      VALUES(${escaped.rows.join(", ")})`
+      VALUES(${escaped.rows.join(", ")})`,
+      res
     );
   },
 
@@ -109,7 +109,6 @@ module.exports = {
 
     //database query and response
     mysqlDb.query(
-      res,
       `SELECT ${parsedQuery.fields}
       FROM ${escaped.tableName}
 	    INNER JOIN ${escaped.targetTable}
@@ -117,7 +116,8 @@ module.exports = {
       INNER JOIN ${escaped.baseTable}
 	    ON ${escaped.baseTable}.${escaped.baseIdField}= ${escaped.tableName}.${escaped.baseIdField}
       WHERE ${escaped.tableName}.${escaped.baseIdField}=${escaped.baseId} 
-      AND ${escaped.tableName}.${escaped.targetIdField}=${targetId}`
+      AND ${escaped.tableName}.${escaped.targetIdField}=${targetId}`,
+      res
     );
   },
 
@@ -134,11 +134,11 @@ module.exports = {
 
     //database query and response
     mysqlDb.query(
-      res,
       `UPDATE ${escaped.tableName} 
   	  SET ${pairs.join(", ")} 
   	  WHERE ${escaped.baseIdField} = ${escaped.baseId} 
-      AND ${escaped.targetIdField} = ${targetId}`
+      AND ${escaped.targetIdField} = ${targetId}`,
+      res
     );
   },
 
@@ -149,10 +149,10 @@ module.exports = {
 
     //database query and response
     mysqlDb.query(
-      req,
       `DELETE FROM ${escaped.tableName} 
 	    WHERE ${escaped.baseIdField} = ${escaped.baseId} 
-  	  AND ${escaped.targetIdField} = ${targetId}`
+  	  AND ${escaped.targetIdField} = ${targetId}`,
+      res
     );
   }
 };

@@ -39,7 +39,7 @@ module.exports = {
     const table = checkTableName(req);
     const urlParse = uP(req.query);
 
-    const sql = qB()
+    const builder = qB()
       .select(urlParse.fields)
       .from(table)
       .join({
@@ -55,17 +55,17 @@ module.exports = {
       .limit(urlParse.limit)
       .offset(urlParse.offset).sql;
 
-    mysqlDb.query(res, sql);
+    mysqlDb.query(builder.sql, res);
   },
 
   //POST: /:baseTable/:baseId/:targetTable
   post: (req, res) => {
     const table = checkTableName(req);
 
-    const sql = qB()
+    const builder = qB()
       .insertInto(table)
       .set(req.body).sql;
-    mysqlDb.query(res, sql);
+    mysqlDb.query(builder.sql, res);
   },
 
   //GET /:baseTable/:baseId/:targetTable/:targetId
@@ -80,7 +80,7 @@ module.exports = {
   put: (req, res) => {
     const table = checkTableName(req);
 
-    const sql = qB()
+    const builder = qB()
       .update(table)
       .set(req.body)
       .where({
@@ -92,14 +92,14 @@ module.exports = {
         value: req.params.targetId
       }).sql;
 
-    mysqlDb.query(res, sql);
+    mysqlDb.query(builder.sql, res);
   },
 
   //DELETE /:baseTable/:baseId/:targetTable/:targetId
   delete: (req, res) => {
     const table = checkTableName(req);
 
-    const sql = qB()
+    const builder = qB()
       .deleteFrom(table)
       .where({
         column: `${req.params.baseTable}_id`,
@@ -110,6 +110,6 @@ module.exports = {
         value: req.params.targetId
       }).sql;
 
-    mysqlDb.query(res, sql);
+    mysqlDb.query(builder.sql, res);
   }
 };

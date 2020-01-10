@@ -17,7 +17,7 @@ database.query(`SHOW tables`, (req, res) => {
   this.tables = res.forEach(el => tables.push(el.Tables_in_sakila));
 });
 
-const query = (res, sql) => {
+const query = (sql, res) => {
   console.log(sql);
   database.query(sql, (err, results) => {
     if (err) res.status(400).json(err);
