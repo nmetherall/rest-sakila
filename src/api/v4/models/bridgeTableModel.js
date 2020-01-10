@@ -53,7 +53,7 @@ module.exports = {
       .and(urlParse.conditions)
       .orderBy(urlParse.orderBy)
       .limit(urlParse.limit)
-      .offset(urlParse.offset).sql;
+      .offset(urlParse.offset);
 
     mysqlDb.query(builder.sql, res);
   },
@@ -64,7 +64,7 @@ module.exports = {
 
     const builder = qB()
       .insertInto(table)
-      .set(req.body).sql;
+      .set(req.body);
     mysqlDb.query(builder.sql, res);
   },
 
@@ -90,7 +90,7 @@ module.exports = {
       .and({
         column: `${req.params.targetTable}_id`,
         value: req.params.targetId
-      }).sql;
+      });
 
     mysqlDb.query(builder.sql, res);
   },
@@ -108,7 +108,7 @@ module.exports = {
       .and({
         column: `${req.params.targetTable}_id`,
         value: req.params.targetId
-      }).sql;
+      });
 
     mysqlDb.query(builder.sql, res);
   }

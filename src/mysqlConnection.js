@@ -18,7 +18,7 @@ database.query(`SHOW tables`, (req, res) => {
 });
 
 const query = (sql, res) => {
-  console.log(sql);
+  console.log(`\n${sql}\n`);
   database.query(sql, (err, results) => {
     if (err) res.status(400).json(err);
     res.status(200).send(results);
