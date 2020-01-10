@@ -102,6 +102,7 @@ class queryBuilder {
     if (!Array.isArray(values)) values = values.split(",");
     values = values.map(el => sqlstring.escapeId(el)).join(",");
     this.sql += ` IN (${values})`;
+    return this;
   }
 
   /**
