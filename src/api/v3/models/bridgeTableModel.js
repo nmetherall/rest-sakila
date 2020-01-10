@@ -116,7 +116,7 @@ module.exports = {
       INNER JOIN ${escaped.baseTable}
 	    ON ${escaped.baseTable}.${escaped.baseIdField}= ${escaped.tableName}.${escaped.baseIdField}
       WHERE ${escaped.tableName}.${escaped.baseIdField}=${escaped.baseId} 
-      AND ${escaped.tableName}.${escaped.targetIdField}=${targetId}`,
+      AND ${escaped.tableName}.${escaped.targetIdField}=${escaped.targetId}`,
       res
     );
   },
