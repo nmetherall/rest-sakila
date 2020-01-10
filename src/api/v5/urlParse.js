@@ -59,10 +59,10 @@ const conditionsHelper = (key, val) => {
 };
 
 const orderByHelper = val => {
-  const opVal = val.split(":");
+  const valOp = val.split(":");
   return {
-    column: opVal[0],
-    order: opVal[1]
+    column: valOp[0],
+    order: valOp[1]
   };
 };
 
