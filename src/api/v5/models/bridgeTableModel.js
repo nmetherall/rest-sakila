@@ -68,7 +68,6 @@ module.exports = {
   //GET /:baseTable/:baseId/:targetTable/:targetId
   get: (req, res) => {
     res.redirect(
-      301,
       `../../../${req.params.targetTable}/${req.params.targetId}`
     );
   },
