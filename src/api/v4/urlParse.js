@@ -1,3 +1,5 @@
+//Takes an express req.query and returns a json of useful key: value pairs
+
 const urlParse = url => {
   let out = {};
 
