@@ -27,6 +27,9 @@ server.use("/api_v3", apiv3);
 //api_v4
 const apiv4 = require("./api/v4/apiRouter.js");
 server.use("/api_v4", apiv4);
+//api_v5
+const apiv5 = require("./api/v5/apiRouter.js");
+server.use("/api_v5", apiv5);
 
 //Default Path
 server.get("/", (req, res) => {
