@@ -1,6 +1,6 @@
 //Takes an express req.query and returns a json of useful key: value pairs
 
-const urlParse = url => {
+const urlQueryParse = url => {
   let out = {};
 
   if (url._fields) {
@@ -76,4 +76,4 @@ class TooManyArgumentsError extends Error {
   }
 }
 
-module.exports = urlParse;
+module.exports = urlQueryParse;

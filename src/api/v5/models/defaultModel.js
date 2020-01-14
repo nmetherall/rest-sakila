@@ -1,6 +1,6 @@
 const mysqlDb = require("../../../mysqlConnection");
 
-const uP = require("../urlParse");
+const uP = require("url-query-parse");
 const qB = require("simple-query-limn");
 
 module.exports = {
