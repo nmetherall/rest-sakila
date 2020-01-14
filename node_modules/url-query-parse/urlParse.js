@@ -1,5 +1,9 @@
 //Takes an express req.query and returns a json of useful key: value pairs
 
+/**
+ * Takes an express req.query and returns a json of useful key: value pairs
+ * @param {JSON} url key value pairs from an express req.query
+ */
 const urlQueryParse = url => {
   let out = {};
 
@@ -33,8 +37,8 @@ const urlQueryParse = url => {
     url._orderBy
       .split(",")
       .forEach(val => out.orderBy.push(orderByHelper(val)));
-    delete url._orderBy;
   }
+  delete url._orderBy;
 
   out.conditions = [];
   Object.keys(url).map(key => {
@@ -59,10 +63,10 @@ const conditionsHelper = (key, val) => {
 };
 
 const orderByHelper = val => {
-  const opVal = val.split(":");
+  const valOp = val.split(":");
   return {
-    column: opVal[0],
-    order: opVal[1]
+    column: valOp[0],
+    order: valOp[1]
   };
 };
 
